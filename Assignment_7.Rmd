@@ -1,0 +1,266 @@
+---
+title: "Assignment 7"
+author: "[Isaiah Wright](https://github.com/iwrig001/csde502_winter_2022_iwrig)"
+date: '`r format(Sys.time(), "%Y-%m-%d %H:%M")`'
+header-includes: #allows you to add in your own Latex packages
+- \usepackage{float} #use the 'float' package
+- \floatplacement{figure}{H} #make every figure with caption = h
+output: 
+    html_document:
+        number_sections: true
+        self_contained: true
+        code_folding: hide
+        toc: true
+        toc_float:
+            collapsed: true
+            smooth_scroll: false
+    pdf_document:
+        number_sections: true
+        toc: true
+        fig_cap: yes
+        keep_tex: yes
+urlcolor: blue        
+---
+
+<!--these following settings control width and also make a DIV tag for black outlines for figures-->
+<style type="text/css">
+.main-container {
+  max-width: 2400px !important;
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>
+
+<style>
+.outline {
+   background-color: #000000;
+   padding:1px;
+   display: inline-block;
+}
+</style>
+
+
+```{r setup, message=FALSE}
+# key setups
+pacman::p_load(tidyverse)
+
+# captions
+library(captioner)
+table_nums <- captioner(prefix = "Table")
+figure_nums <- captioner(prefix = "Figure")
+
+# for having DIV tags
+knitr::knit_hooks$set(class = function(before, options, envir) {
+  if(before){
+    sprintf("<div class = '%s'>", options$class)
+  }else{
+    "</div>"
+  }
+})
+
+# chunk options
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+
+# path to this file name
+if (!interactive()) {
+    fnamepath <- as.character(sys.call(1))[2]
+}
+```
+
+<!-- for a wide presentation -->
+<style type="text/css">
+.main-container {
+  max-width: 2400px !important;
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>
+
+<!-- a DIV for black outline, good for figures-->
+<style>
+.outline {
+   background-color: #000000;
+   padding:1px;
+   display: inline-block;
+}
+</style>
+
+
+
+
+
+
+# Content
+
+
+## Instructions for 1
+
+1.	Generate a new data frame from the full public Add Health data set (http://staff.washington.edu/phurvitz/csde502_winter_2021/data/21600-0001-Data.dta.zip) that consists of a subset of at least four of the original columns. Do not use any of the variables used as examples in Lesson 7.
+a.	Use R to download and unzip the file. You can use curl::curl_download() to download the file and utils::unzip() to unzip the file.
+b.	At least one of the variables should be able to stratify the respondents into meaningful analytic groups.
+c.	The data frame should have a “label” attribute that provides a brief but informative description of the table.
+d.	The columns should be formatted as factor variables with proper value labels and ordering if applicable.
+e.	The columns should have informative attributes as you see fit.
+
+
+## Read data in
+
+```{r}
+# unzip the file
+if(file.exists("data/AHwave1_v1.dta.zip") & !file.exists("data/AHwave1_v1.dta")){
+    unzip(zipfile = "data/AHwave1_v1.dta.zip", exdir = "data")
+}
+
+# read the data
+AHwave1_v1_haven <- haven::read_dta(file = "AHwave1_v1.dta")
+
+# unzip the file
+if(file.exists("21600-0001-Data.dta.zip") & !file.exists("21600-0001-Data.dta")){
+    unzip(zipfile = "21600-0001-Data.dta.zip", exdir = "data")
+}
+
+# read the data
+AdHealth_new <- haven::read_dta(file = "21600-0001-Data.dta")
+```
+
+
+
+## Save files into a temporary directory and as an RDS type file.
+
+
+```{r}
+# temp dir
+mytempdir <- tempdir()
+
+#write.csv(x = AdHealth_new, file = file.path(mytempdir, "AdHealth_new.csv"), row.names = FALSE)
+saveRDS(object = AdHealth_new, file = file.path(mytempdir, "AdHealth_new.RDS"))
+```
+
+```{r}
+attributes(AdHealth_new$H1GI8)$labels %>%
+    t() %>%
+    t()
+
+AdHealth_new$H1GI8 %>% attributes()
+
+
+#Convert variable to a factor
+AdHealth_new$race <- factor(AdHealth_new$H1GI8)
+
+head(AdHealth_new$race)
+```
+
+
+
+```{r}
+library(magrittr)
+# extract the labels from the column attribute
+race_levels <- AdHealth_new$H1GI8 %>%
+    attributes() %>%
+    extract2("labels") %>%
+    names()
+
+race_levels
+
+# create the factor variable 
+AdHealth_new$race <- factor(AdHealth_new$H1GI8,
+    labels = race_levels
+)
+
+
+# factor variable description
+(tab_race <- AdHealth_new %>%
+    group_by(race) %>%
+    summarise(n = n()))
+```
+
+
+
+I'd like to use h1gi8 which is the single-race category to stratify my respondents into meaningful groups
+
+
+
+
+## Create a figure
+
+```{r}
+ggplot(data = tab_race, aes(x = race, y = n)) +
+    geom_bar(stat = "identity") +
+    coord_flip()
+```
+
+## Generate a table depicting the count and percent race in sample.
+
+```{r}
+AdHealth_new %>%
+    group_by(race) %>%
+    summarise(n = n()) %>%
+    mutate(`%` = n / sum(n) * 100) %>%
+    mutate(`%` = `%` %>% round(1)) %>%
+    kable() 
+```
+
+
+```{r}
+# extract the labels from the column attribute
+Marriage_levels <- AdHealth_new$H1GI15 %>%
+    attributes() %>%
+    extract2("labels") %>%
+    names()
+
+Marriage_levels
+
+# create the factor variable 
+AdHealth_new$Marriage <- factor(AdHealth_new$H1GI15,
+    labels = Marriage_levels
+)
+
+
+# factor variable description
+(tab_Marriage <- AdHealth_new %>%
+    group_by(Marriage) %>%
+    summarise(n = n()))
+
+```
+
+
+I imagine it would be best to soomehow exclude the response 7 from this category as the individuals were under the age of 15.
+
+
+```{r}
+AdHealth_new %>%
+    group_by(
+        race,
+        Marriage
+    ) %>%
+    summarise(n = n(), .groups = "drop_last") %>%
+    mutate(`%` = n / sum(n) * 100) %>%
+    mutate(`%` = `%` %>% round(1)) %>%
+    kable() 
+    
+    
+```
+
+
+```{r}
+ggplot(data = tab_Marriage, aes(x = Marriage, y = n)) +
+    geom_histogram(stat = "identity") +
+    coord_flip()
+```
+
+
+<hr>
+
+# Source code
+File is at `r fnamepath`.
+
+## Source code for this document
+
+```{r ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```
+
+## Complete Rmd code
+
+```{r comment=''}
+cat(readLines(fnamepath), sep = '\n')
+```
