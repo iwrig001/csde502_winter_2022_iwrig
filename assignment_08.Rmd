@@ -1,0 +1,339 @@
+---
+title: "CSDE 502 Winter 2022, Assignment 8"
+author: "Iwrig, Isaiah Wright"
+output: 
+    bookdown::html_document2:
+        number_sections: true
+        self_contained: true
+        code_folding: hide
+        toc: true
+        toc_float:
+            collapsed: true
+            smooth_scroll: false
+    pdf_document:
+        number_sections: true
+        toc: true
+        fig_cap: yes
+        keep_tex: yes
+urlcolor: blue 
+
+<style>
+.look {
+  font-size: 18px;
+  background-color: limegreen;
+  border: 3px solid green;
+  }
+}
+</style>
+---
+
+```{r}
+library(captioner)
+
+figure_nums <- captioner(prefix = "Figure")
+table_nums <- captioner(prefix = "Table")
+```
+
+***Explanation***:
+This assignment is intended to give you more practice in manipulating variables. It is a doozy, so complete what you can in a reasonable amount of time!
+
+***Instructions***: 
+
+1. Make sure your Rmd file has no local file system dependencies (i.e., anyone should be able to recreate the output HTML using only the Rmd source file).
+1. Make a copy of this Rmd file and add answers below each question. The code that generated the answers should be included, as well as the complete source code for the document.
+1. Change the YAML header above to identify yourself and include contact information.
+1. For any tables or figures, include captions and cross-references and any other document automation methods as necessary.
+1. Make sure your output HTML file looks appealing to the reader.
+1. Upload the final Rmd to your github repository.
+1. Download [`assn_08_id.txt`](http://staff.washington.edu/phurvitz/csde502_winter_2021/assignments/assn_08_id.txt) and include the URL to your Rmd file on github.com.
+1. Create a zip file from your copy of `assn_08_id.txt` and upload the zip file to the Canvas site for Assignment 8. ***The zip file should contain only the text file. Do not include any additional files in the zip file--everything should be able to run from the file you uploaded to github.com. Use zip format and not 7z or any other compression/archive format.***
+
+#
+Imagine a new variable: `multirace`, using the following value definitions:
+
+	1 = one race, White
+	2 = one race, not White
+	3 = two races, includes White
+	4 = two races, both non-White
+	5 = three or more races, includes White
+	6 = three or more races, all non-White
+	9 = any race missing (White, Black/African American, American Indian, Asian, other)
+
+## 
+**Fill in the codes for the hypothetical cases below (`r table_nums(name = "t01", display = "cite")`).** Assume, as with the other Add Health data, that 6 = "refused" and 8 = "don't know".
+
+The above instruction doesn't make much sense because above 6 and 8 represent the values of 3 or more races and any race missing. If that is the case there is no need to consider what we did with the other Add Health Data.
+
+`r table_nums(name = "t01", caption = "A hypothetical data set")`
+
+| white| black| AI| asian| raceother|multirace |
+|-----:|-----:|--:|-----:|---------:|---------:|
+|     1|     0|  0|     0|         0|    1     |
+|     0|     1|  0|     0|         0|    2     |
+|     1|     0|  0|     1|         0|    3     |
+|     0|     1|  1|     0|         0|    4     |
+|     1|     1|  0|     1|         0|    5     |
+|     0|     1|  0|     0|         1|    4     |
+|     0|     1|  1|     0|         1|    6     |
+|     1|     0|  1|     0|         0|    3     |
+|     1|     1|  1|     0|         1|    5     |
+|     6|     1|  8|     1|         6|    9     |	
+
+## 
+**Using this data frame (code below), report how many cases checked more than one race.** Use R code to make this calculation and use inline expressions.
+
+
+
+
+```{r}
+dat <- 
+structure(
+    list(
+        white = c(1L, 0L, 1L, 0L, 1L, 0L, 0L, 1L, 1L, 6L),
+        black = c(0L, 1L, 0L, 1L, 1L, 1L, 1L, 0L, 1L, 1L), 
+        AI = c(0L, 0L, 0L, 1L, 0L, 0L, 1L, 1L, 1L, 8L), 
+        asian = c(0L, 0L, 1L, 0L, 1L, 0L, 0L, 0L, 0L, 1L), 
+        raceother = c(0L, 0L, 0L, 0L, 0L, 1L, 1L, 0L, 1L, 6L), 
+        multirace = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA)
+    ), 
+    class = "data.frame", 
+    row.names = c(NA, -10L)
+)
+```
+
+str(dat)
+dim(dat)
+attributes(dat)
+print(dat)
+library(tidyverse)
+
+```{r}
+dat %>% 
+  rowwise() %>%
+  mutate(total = sum(c(white, black, AI, asian, raceother)))
+```
+
+### I am not sure I did this correctly.
+The number of respondents who checked more than one was `r sum(dat$total>1,na.rm= TRUE) ` 
+
+
+
+
+##
+**Write R code to create the multirace variable, using the data set [AHwave1_v3.rds](http://staff.washington.edu/phurvitz/csde502_winter_2021/data/AHwave1_v3.rds).** _Hint: You may want to create another variable, numrace, that counts the number of races._ Use [`download_file()`](https://stat.ethz.ch/R-manual/R-devel/library/utils/html/download.file.html) and `tempdir()` to download the file to a temporary directory to avoid local file system dependencies.
+
+
+
+```{r}
+#Load in data
+AHwave1_v3 <- readRDS("H:/csde_502a/csde502_winter_2022_iwrig/AHwave1_v3.rds")
+
+#Set up temp dir
+# temp dir
+mytempdir <- tempdir()
+
+#Save data to temp dir
+saveRDS(object = AHwave1_v3, file = file.path(mytempdir, "AHwave1_v3.RDS"))
+
+```
+
+
+#### testing to make sure these variables exist... they do
+str(AHwave1_v3$white)
+
+str(AHwave1_v3$asian)
+
+str(AHwave1_v3$raceother)
+
+<div class="look">
+
+
+
+
+
+```{r}
+#AHwave1_v3 %>% mutate(race_num=
+ # rowSums(white, black, AI, asian, raceother))
+#AHwave1_v3
+
+
+
+## row wise sum using dplyr attempting to create race_number
+
+AHwave1_v3 %>%
+ mutate_all(
+    Total_race = rowSums(white, black, AI, asian, raceother)) #Asian and race other not found not sure how to correct for this as both variables exist. I've also tried using c(white, black, AI, asain, raceother) but this doesn't recognize white.
+
+#Logically I need to create a variable that says when the rowWise sum is greater than 1, then give this variable the value of 1, else 0 in order to create a dichotomous multrace variable
+
+
+AHwave1_v3 %>% 
+  mutate(
+    multrace = case_when( 
+      Total_race > 1 ~ 1,
+      Total_race < 1 ~ 0,
+      Total_race == 1 ~ 0
+  ))
+
+str(AHwave1_v3$Total_race)
+
+```
+
+</div>
+
+
+
+
+<div class="look">
+
+## 
+**Label the `multirace` variable as well as its values using attribute labels.**.
+
+```{r}
+# extract the labels from the column attribute
+race_levels <- AHwave1_v3$observedrace %>%
+    attributes() %>%
+    extract2("labels") %>%
+    names()
+
+racevals <- AHwave1_v3$observedrace %>%
+    attributes() %>%
+    extract2("labels") %>%
+    as.numeric()
+
+# Label Multi race
+AHwave1_v3$multrace <- factor(AHwave1_v3$multrace,
+    labels = race_levels)
+
+```
+
+
+</div>
+
+## 
+**Include below a contingency table of the multirace variable. Make sure that the values are labelled so the table is readable, and also include any missing values.**
+
+
+
+<div class="look">
+
+```{r}
+#I am not 100 percent sure what you mean by contigency table. I imagine you want me to view a breakdown of mult race by the county and percent in comparison to all races? There isn't an all race variable so would I have to create one? 
+AHwave1_v3 %>%
+    group_by(observedrace, multrace) %>%
+    summarise(n = n()) %>%
+    kable() %>%
+    kable_styling(full_width = FALSE, position = "left", 
+                  bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+
+
+```{r}
+#Taken from class notes, this would give me a table grouped by multrace and providing the count and percentage, but it's not compared to an overall race.
+AHwave1_v3 %>%
+    group_by(
+        multrace
+    ) %>%
+    summarise(n = n(), .groups = "drop_last") %>%
+    mutate(`%` = n / sum(n) * 100) %>%
+    mutate(`%` = `%` %>% round(1)) %>% 
+    kable %>% 
+    kable_styling(
+        full_width = FALSE, position = "left",
+        bootstrap_options = c("striped", "hover", "condensed", "responsive")
+    ) %>% 
+    pack_rows(index = multrace) 
+```
+
+
+
+</div>
+
+# 
+**Review part B of each of the answers (i.e., `H1KQ1B .. H1KQ10B`) to the Knowledge Quiz (Section 19 of the Add Health questionnaire, documented in `INH19PUB.PDF`). The 10 questions each ask: "How confident are you that your answer is correct?"**
+x
+
+I have reviewed the part b of the answers, each of them would indicate I shouldn't be as confident about the results because many of hte respondents aren't extremely confident about their answers. I think it would be important to generate a sort of weight based on the confidence the respondents answer with when utilizing this data.
+
+## 
+**Write R code that creates a single summary variable named `kqconfidence`, with a larger number representing the respondent being more confident across all questions (scale of 0 to 3 for each individual question; `kqconfidence` will be the sum for each subject across the 10 questions). Note that any observations with value 7 (i.e., age less than 15) should be removed from the data frame, and values 6, 8, and 9 should be coded as `NA` (i.e., missing) for the purposes of scoring confidence. Document your code so that the reader knows how you scored the scale and how you handled missing values. Make sure to label the new variable.**
+
+
+<div class="look">
+
+
+```{r}
+#I can't find it within lectures, but I know that you mentioned we could do h1kq!b or something similar where it would grab whatever value the exclamation point has and it assigns across all of those values so I attempted that. 
+
+AHwave1_v3 %>% 
+  mutate(
+    kqconfidence = case_when( 
+      h1kq!b == 1 ~ 3,
+      h1kq!b == 2 ~ 2,
+      h1kq!b == 3 | 4 ~ 1,
+      h1kq!b == 6 ~ "NA",
+      h1kq!b == 7 ~ "NA",
+      h1kq!b == 8 ~ "NA",
+      h1kq!b == 9 ~ "NA"
+  ))
+
+
+```
+
+</div>
+
+## 
+**Create and include below a contingency table from `kqconfidence` with raw counts, percentages, and cumulative percentages.**
+
+<div class="look">
+Still not sure what generating a contigency table is
+</div>
+
+```{r}
+#Taken from class notes, this would give me a table grouped by multrace and providing the count and percentage, but it's not compared to an overall race.
+AHwave1_v3 %>%
+    group_by(
+        kqconfidence
+    ) %>%
+    summarise(n = n(), .groups = "drop_last") %>%
+    mutate(`%` = n / sum(n) * 100) %>%
+    mutate(`%` = `%` %>% round(1)) %>% 
+    kable %>% 
+    kable_styling(
+        full_width = FALSE, position = "left",
+        bootstrap_options = c("striped", "hover", "condensed", "responsive")
+    ) %>% 
+    pack_rows(index = multrace) 
+```
+
+
+
+## 
+**[BONUS] For each subject there were zero to 10 _missing_ answers to each of the 10 component questions. We would like to know what this distribution is. Include below a table that shows the count of subjects for each unique value of the count of missing questions.**
+
+
+If I were to attempt this question I would likely use a box and whisker plot to identify missing answers or answers that were far off. Or a table taht generates the missing answer, coded as missing or NA.
+
+## 
+**For each possible value of the Knowledge Quiz Part A sum score (from [Lesson 8](http://staff.washington.edu/phurvitz/csde502_winter_2021/week8.html#scoring-across-columns)) what is the mean `kqconfidence` level?**
+
+<div class="look">
+```{r}
+AHwave1_v3 %>%
+    group_by(
+        kqconfidence
+    ) %>%
+    summarise_at(mean()) %>%
+    kable %>% 
+    kable_styling(
+        full_width = FALSE, position = "left",
+        bootstrap_options = c("striped", "hover", "condensed", "responsive")
+    ) %>% 
+    pack_rows(index = multrace) 
+```
+
+</div>
+
+
+## 
+**[BONUS] For each respondent, create two different confidence scores: a confidence score for the items answered correctly and a confidence score for the items answered incorrectly. How many respondents are more confident when answering incorrectly?**
